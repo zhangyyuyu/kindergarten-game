@@ -2,145 +2,57 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="refresh" content="0;url=https://raw.githack.com/zhangyyuyu/kindergarten-game/main/index.html">
   <title>开局托儿所 - 点击即玩</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
       background: linear-gradient(160deg, #fff5e6, #ffe8f0, #e8f4ff);
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-      color: #2d3436;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px; color: #2d3436;
     }
     .card {
-      background: #fff;
-      border-radius: 24px;
-      padding: 32px 24px;
-      max-width: 360px;
-      width: 100%;
-      text-align: center;
+      background: #fff; border-radius: 24px; padding: 32px 24px;
+      max-width: 360px; width: 100%; text-align: center;
       box-shadow: 0 12px 40px rgba(255,107,107,0.18);
     }
     .icon { font-size: 4rem; margin-bottom: 12px; }
     h1 { font-size: 1.6rem; color: #ff6b6b; margin-bottom: 8px; }
     p { color: #636e72; line-height: 1.7; font-size: 0.95rem; margin-bottom: 16px; }
     .tip {
-      background: #fff9e6;
-      border: 1px solid #ffd93d;
-      border-radius: 12px;
-      padding: 14px;
-      text-align: left;
-      font-size: 0.88rem;
-      color: #636e72;
-      margin-bottom: 20px;
-      line-height: 1.6;
+      background: #fff9e6; border: 1px solid #ffd93d; border-radius: 12px;
+      padding: 14px; text-align: left; font-size: 0.88rem; color: #636e72;
+      margin-bottom: 20px; line-height: 1.6;
     }
-    .tip strong { color: #e17055; }
     .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.05rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 10px;
-      font-family: inherit;
-    }
-    .btn-primary {
+      display: block; width: 100%; padding: 14px; border: none; border-radius: 50px;
+      font-size: 1.05rem; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+      font-family: inherit; text-decoration: none; color: #fff;
       background: linear-gradient(135deg, #ff6b6b, #ff8787);
-      color: #fff;
       box-shadow: 0 4px 16px rgba(255,107,107,0.35);
     }
-    .btn-secondary {
-      background: #f1f2f6;
-      color: #636e72;
-    }
-    .btn-green {
-      background: linear-gradient(135deg, #4ecdc4, #6ee7de);
-      color: #fff;
-    }
-    .arrow-hint {
-      position: fixed;
-      top: 8px;
-      right: 16px;
-      font-size: 0.8rem;
-      color: #e17055;
-      animation: blink 1.2s infinite;
-    }
-    @keyframes blink { 50% { opacity: 0.4; } }
-    .hidden { display: none; }
+    .btn2 { background: #f1f2f6; color: #636e72; box-shadow: none; }
   </style>
 </head>
 <body>
-  <div class="arrow-hint hidden" id="arrow-hint">👆 点这里 ···</div>
-
   <div class="card">
     <div class="icon">🐣</div>
     <h1>开局托儿所</h1>
-    <p>挑战十以内加减法！滑动框选数字，和为 10 消除得分</p>
-
+    <p>挑战十以内加减法！</p>
     <div class="tip" id="wechat-tip" style="display:none">
-      <strong>微信内打不开？</strong><br>
-      1. 点击右上角 <strong>···</strong><br>
-      2. 选择 <strong>「在浏览器中打开」</strong><br>
-      3. 即可正常游玩
+      微信内若无法自动跳转，请点击下方按钮<br>
+      或点右上角 <strong>···</strong> → <strong>在浏览器中打开</strong>
     </div>
-
-    <button class="btn btn-primary" id="btn-play">🎮 立即开始游戏</button>
-    <button class="btn btn-green" id="btn-browser">🌐 在浏览器中打开</button>
-    <button class="btn btn-secondary" id="btn-copy">📋 复制游戏链接</button>
+    <a class="btn" id="btn-play" href="https://raw.githack.com/zhangyyuyu/kindergarten-game/main/index.html">🎮 立即开始游戏</a>
+    <a class="btn btn2" id="btn-alt" href="https://zhangyyuyu.github.io/kindergarten-game/">备用线路</a>
   </div>
-
   <script>
-    var SHARE_URL = 'https://jsd.onmicrosoft.cn/gh/zhangyyuyu/kindergarten-game@main/go.html';
-    var GAME_URL = 'https://jsd.onmicrosoft.cn/gh/zhangyyuyu/kindergarten-game@main/index.html';
-    var isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-
-    if (isWeChat) {
+    if (/MicroMessenger|QQ\//i.test(navigator.userAgent)) {
       document.getElementById('wechat-tip').style.display = 'block';
-      document.getElementById('arrow-hint').classList.remove('hidden');
     }
-
-    document.getElementById('btn-play').onclick = function() {
-      window.location.href = GAME_URL;
-    };
-
-    document.getElementById('btn-browser').onclick = function() {
-      var url = GAME_URL;
-      if (/Android/i.test(navigator.userAgent)) {
-        var path = url.replace(/^https?:\/\//, '');
-        window.location.href = 'intent://' + path + '#Intent;scheme=https;action=android.intent.action.VIEW;end';
-        setTimeout(function() { window.location.href = url; }, 800);
-      } else {
-        alert('请点击右上角 ··· → 选择「在 Safari 中打开」');
-        window.location.href = url;
-      }
-    };
-
-    document.getElementById('btn-copy').onclick = function() {
-      var url = SHARE_URL;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(function() {
-          alert('链接已复制！可粘贴到浏览器地址栏打开');
-        });
-      } else {
-        var input = document.createElement('input');
-        input.value = url;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        alert('链接已复制！可粘贴到浏览器地址栏打开');
-      }
-    };
+    window.location.replace('https://raw.githack.com/zhangyyuyu/kindergarten-game/main/index.html');
   </script>
 </body>
 </html>
