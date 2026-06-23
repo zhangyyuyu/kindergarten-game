@@ -8,9 +8,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#fff5e6">
   <title>开局托儿所 - 挑战十以内加减法</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,7 +23,7 @@
     }
 
     body {
-      font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
       background: linear-gradient(160deg, #fff5e6 0%, #ffe8f0 50%, #e8f4ff 100%);
       min-height: 100vh;
       min-height: 100dvh;
@@ -841,7 +838,7 @@
       document.getElementById('wechat-overlay').classList.add('hidden');
     });
     document.getElementById('btn-wechat-copy').addEventListener('click', function() {
-      var url = 'https://raw.githack.com/zhangyyuyu/kindergarten-game/main/index.html';
+      var url = 'https://zhangyyuyu.github.io/kindergarten-game/';
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(function() { alert('链接已复制，请粘贴到浏览器打开'); });
       } else {
