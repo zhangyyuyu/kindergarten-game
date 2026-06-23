@@ -95,16 +95,18 @@
     var REPO = 'zhangyyuyu/kindergarten-game';
     var GAME = 'index.html';
 
-    // 多线路镜像，覆盖微信/QQ/各品牌手机浏览器
+    // 多线路镜像，优先国内节点，覆盖微信/QQ/各品牌手机
     var MIRRORS = [
-      { name: '线路A（推荐·国内快）', url: 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/' + GAME },
-      { name: '线路B（Fastly CDN）', url: 'https://fastly.jsdelivr.net/gh/' + REPO + '@main/' + GAME },
+      { name: '线路A（国内推荐）', url: 'https://jsd.onmicrosoft.cn/gh/' + REPO + '@main/' + GAME },
+      { name: '线路B（Cloudflare）', url: 'https://testingcf.jsdelivr.net/gh/' + REPO + '@main/' + GAME },
       { name: '线路C（Gcore CDN）', url: 'https://gcore.jsdelivr.net/gh/' + REPO + '@main/' + GAME },
-      { name: '线路D（GitHack）', url: 'https://raw.githack.com/' + REPO + '/main/' + GAME },
-      { name: '线路E（GitHub Pages）', url: 'https://zhangyyuyu.github.io/kindergarten-game/' + GAME }
+      { name: '线路D（jsDelivr）', url: 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/' + GAME },
+      { name: '线路E（Fastly CDN）', url: 'https://fastly.jsdelivr.net/gh/' + REPO + '@main/' + GAME },
+      { name: '线路F（GitHack）', url: 'https://raw.githack.com/' + REPO + '/main/' + GAME },
+      { name: '线路G（GitHub Pages）', url: 'https://zhangyyuyu.github.io/kindergarten-game/' + GAME }
     ];
 
-    var SHARE_URL = 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/go.html';
+    var SHARE_URL = 'https://jsd.onmicrosoft.cn/gh/' + REPO + '@main/go.html';
     var bestUrl = '';
     var isWeChat = /MicroMessenger/i.test(navigator.userAgent);
     var isQQ = /QQ\//i.test(navigator.userAgent);
