@@ -405,6 +405,18 @@
     </div>
   </div>
 
+  <!-- WeChat Guide -->
+  <div class="overlay hidden" id="wechat-overlay">
+    <div class="modal">
+      <div class="modal-icon">📱</div>
+      <h2>微信内游玩提示</h2>
+      <p>若页面无法加载，请点击右上角 <strong>···</strong> → <strong>在浏览器中打开</strong></p>
+      <p style="font-size:0.8rem;margin-top:8px">推荐使用 Safari / Chrome 浏览器，体验更流畅</p>
+      <button class="btn-start" id="btn-wechat-continue">我知道了，继续玩</button>
+      <button class="btn-secondary" id="btn-wechat-copy" style="margin-top:8px">复制链接到浏览器打开</button>
+    </div>
+  </div>
+
   <!-- Level Select -->
   <div class="overlay" id="level-select-overlay">
     <div class="modal">
@@ -818,6 +830,24 @@
     currentLevel = 1;
     initGrid();
     renderLevelSelect();
+
+    // WeChat browser guide
+    var isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+    if (isWeChat && !sessionStorage.getItem('wechat_dismissed')) {
+      document.getElementById('wechat-overlay').classList.remove('hidden');
+    }
+    document.getElementById('btn-wechat-continue').addEventListener('click', function() {
+      sessionStorage.setItem('wechat_dismissed', '1');
+      document.getElementById('wechat-overlay').classList.add('hidden');
+    });
+    document.getElementById('btn-wechat-copy').addEventListener('click', function() {
+      var url = 'https://cdn.jsdelivr.net/gh/zhangyyuyu/kindergarten-game@main/play.html';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() { alert('链接已复制，请粘贴到浏览器打开'); });
+      } else {
+        prompt('请复制以下链接到浏览器打开：', url);
+      }
+    });
   </script>
 </body>
 </html>
