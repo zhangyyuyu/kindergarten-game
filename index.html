@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#fff5e6">
+  <title>开局托儿所 - 挑战十以内加减法</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #ff6b6b;
+      --secondary: #4ecdc4;
+      --accent: #ffe66d;
+      --text: #2d3436;
+      --tile: #ffffff;
+      --tile-border: #ffd93d;
+      --select: rgba(78, 205, 196, 0.45);
+      --select-border: #4ecdc4;
+    }
+
+    body {
+      font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(160deg, #fff5e6 0%, #ffe8f0 50%, #e8f4ff 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text);
+      overflow-x: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 16px 8px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .logo {
+      font-size: 2rem;
+      color: var(--primary);
+      text-shadow: 2px 2px 0 var(--accent);
+      letter-spacing: 2px;
+    }
+
+    .tagline { font-size: 0.9rem; color: #636e72; margin-top: 4px; }
+
+    .level-banner {
+      width: calc(100% - 32px);
+      max-width: 480px;
+      background: white;
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin: 8px 0 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .level-banner-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .level-name { font-size: 1.1rem; color: var(--primary); }
+    .level-num { font-size: 0.85rem; color: #636e72; }
+
+    .progress-track {
+      height: 10px;
+      background: #f1f2f6;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), #6ee7de);
+      border-radius: 5px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .progress-label {
+      font-size: 0.75rem;
+      color: #636e72;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 16px 12px;
+      width: 100%;
+      max-width: 520px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 16px;
+      padding: 8px 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      min-width: 72px;
+    }
+
+    .stat-label { font-size: 0.7rem; color: #636e72; }
+    .stat-value { font-size: 1.3rem; color: var(--primary); }
+    .stat.timer .stat-value { color: #e17055; }
+    .stat.sum .stat-value { color: var(--secondary); transition: color 0.2s; }
+    .stat.sum.match .stat-value { color: #00b894; animation: pulse 0.4s ease; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .game-wrap {
+      position: relative;
+      width: calc(100% - 32px);
+      max-width: 480px;
+      background: white;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(255, 107, 107, 0.15);
+      border: 3px solid var(--tile-border);
+      user-select: none;
+      touch-action: none;
+    }
+
+    #grid {
+      display: grid;
+      gap: 8px;
+      position: relative;
+    }
+
+    .tile {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--tile);
+      border: 2px solid var(--tile-border);
+      border-radius: 12px;
+      font-size: clamp(1rem, 3.5vw, 1.5rem);
+      font-weight: bold;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s, opacity 0.3s;
+      position: relative;
+    }
+
+    .tile.selected {
+      background: var(--select);
+      border-color: var(--select-border);
+      transform: scale(1.05);
+      z-index: 2;
+    }
+
+    .tile.eliminating { animation: pop 0.4s ease forwards; }
+
+    @keyframes pop {
+      0% { transform: scale(1.1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.8; background: var(--accent); }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    .tile.spawning { animation: spawn 0.3s ease forwards; }
+
+    @keyframes spawn {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .tile.empty {
+      background: #f8f9fa;
+      border-color: #dfe6e9;
+      color: transparent;
+      pointer-events: none;
+    }
+
+    #selection-box {
+      position: absolute;
+      border: 2px dashed var(--select-border);
+      background: var(--select);
+      border-radius: 8px;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+    }
+
+    .hint-bar {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #636e72;
+      min-height: 24px;
+    }
+
+    .hint-bar.success { color: #00b894; font-weight: bold; }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      padding: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    button:active { transform: scale(0.96); }
+
+    .btn-start {
+      background: linear-gradient(135deg, var(--primary), #ff8787);
+      color: white;
+      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-restart, .btn-next {
+      background: linear-gradient(135deg, var(--secondary), #6ee7de);
+      color: white;
+      box-shadow: 0 4px 16px rgba(78, 205, 196, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f1f2f6;
+      color: #636e72;
+      box-shadow: none;
+    }
+
+    .combos {
+      max-width: 480px;
+      padding: 0 16px 24px;
+      text-align: center;
+    }
+
+    .combos h3 { font-size: 0.9rem; color: #636e72; margin-bottom: 8px; }
+    .combo-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .combo-tag {
+      background: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #636e72;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 52, 54, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .overlay.hidden { display: none; }
+
+    .modal {
+      background: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+      animation: slideUp 0.4s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-icon { font-size: 3rem; margin-bottom: 8px; }
+    .modal h2 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+    .modal p { color: #636e72; line-height: 1.6; margin-bottom: 6px; font-size: 0.9rem; }
+    .modal .score-big { font-size: 2.5rem; color: var(--primary); margin: 12px 0; }
+    .modal .degree { font-size: 1rem; color: var(--secondary); margin-bottom: 16px; }
+    .modal button { width: 100%; margin-top: 8px; }
+
+    .tutorial-step {
+      text-align: left;
+      margin: 10px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      font-size: 0.9rem;
+    }
+
+    .tutorial-step strong { color: var(--primary); }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .level-btn {
+      aspect-ratio: 1;
+      border: 2px solid var(--tile-border);
+      border-radius: 12px;
+      background: white;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .level-btn:hover:not(.locked) { transform: scale(1.05); background: #fff9e6; }
+    .level-btn .lv-num { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+    .level-btn .lv-star { font-size: 0.65rem; color: #ffd93d; }
+    .level-btn.locked { opacity: 0.45; cursor: not-allowed; background: #f1f2f6; }
+    .level-btn.locked .lv-num { color: #b2bec3; }
+    .level-btn.cleared { border-color: var(--secondary); background: #e8faf8; }
+
+    .modal-actions { display: flex; flex-direction: column; gap: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🐣 开局托儿所</div>
+    <div class="tagline">10 关递进挑战 · 滑动框选数字，和为 10 消除</div>
+  </header>
+
+  <div class="level-banner" id="level-banner" style="display:none">
+    <div class="level-banner-top">
+      <span class="level-name" id="level-name">托儿所小班</span>
+      <span class="level-num" id="level-num">第 1 / 10 关</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-label" id="progress-label">目标: 0 / 20 分</div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-label">得分</div>
+      <div class="stat-value" id="score">0</div>
+    </div>
+    <div class="stat timer">
+      <div class="stat-label">时间</div>
+      <div class="stat-value" id="timer">60</div>
+    </div>
+    <div class="stat sum">
+      <div class="stat-label">选中和</div>
+      <div class="stat-value" id="current-sum">0</div>
+    </div>
+  </div>
+
+  <div class="game-wrap" id="game-wrap">
+    <div id="grid"></div>
+    <div id="selection-box"></div>
+    <div class="hint-bar" id="hint">框选数字，使总和等于 10 即可消除得分！</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-start" id="btn-start">选择关卡</button>
+    <button class="btn-restart" id="btn-restart" style="display:none">返回选关</button>
+  </div>
+
+  <div class="combos">
+    <h3>常用组合提示</h3>
+    <div class="combo-tags">
+      <span class="combo-tag">1+9</span>
+      <span class="combo-tag">2+8</span>
+      <span class="combo-tag">3+7</span>
+      <span class="combo-tag">4+6</span>
+      <span class="combo-tag">5+5</span>
+      <span class="combo-tag">1+2+7</span>
+      <span class="combo-tag">2+3+5</span>
+      <span class="combo-tag">1+3+6</span>
+      <span class="combo-tag">3+3+4</span>
+    </div>
+  </div>
+
+  <!-- Level Select -->
+  <div class="overlay" id="level-select-overlay">
+    <div class="modal">
+      <div class="modal-icon">🐣</div>
+      <h2>选择关卡</h2>
+      <p>共 10 关，难度依次递增。在限时内达到目标分数即可通关！</p>
+      <div class="level-grid" id="level-grid"></div>
+      <button class="btn-start" id="btn-from-lv1">从第 1 关开始</button>
+    </div>
+  </div>
+
+  <!-- Level Complete -->
+  <div class="overlay hidden" id="levelclear-overlay">
+    <div class="modal">
+      <div class="modal-icon">🎉</div>
+      <h2 id="clear-title">第 1 关通关！</h2>
+      <div class="score-big" id="clear-score">0</div>
+      <div class="degree" id="clear-msg">太棒了，准备下一关吧！</div>
+      <div class="modal-actions">
+        <button class="btn-next" id="btn-next-level">下一关 →</button>
+        <button class="btn-secondary" id="btn-back-select">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Failed -->
+  <div class="overlay hidden" id="levelfail-overlay">
+    <div class="modal">
+      <div class="modal-icon">😢</div>
+      <h2 id="fail-title">挑战失败</h2>
+      <div class="score-big" id="fail-score">0</div>
+      <p id="fail-msg">还差 5 分，再试一次！</p>
+      <div class="modal-actions">
+        <button class="btn-restart" id="btn-retry">重新挑战</button>
+        <button class="btn-secondary" id="btn-fail-back">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Complete -->
+  <div class="overlay hidden" id="allclear-overlay">
+    <div class="modal">
+      <div class="modal-icon">🏆</div>
+      <h2>全部通关！</h2>
+      <p>你已完成全部 10 关挑战，获得<strong>最强大脑</strong>称号！</p>
+      <div class="score-big" id="total-score">0</div>
+      <div class="modal-actions">
+        <button class="btn-restart" id="btn-replay-all">再玩一次</button>
+        <button class="btn-secondary" id="btn-all-back">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TARGET = 10;
+    const STORAGE_KEY = 'kindergarten_unlocked';
+
+    const LEVELS = [
+      { name: '托儿所小班', time: 90,  target: 20, cols: 5, rows: 5, easyBias: 0.85, desc: '新手教程，数字简单，时间充裕' },
+      { name: '托儿所中班', time: 75,  target: 30, cols: 5, rows: 6, easyBias: 0.75, desc: '熟悉操作，轻松凑 10' },
+      { name: '托儿所大班', time: 65,  target: 40, cols: 6, rows: 6, easyBias: 0.65, desc: '网格变大，需要更快反应' },
+      { name: '学前班',     time: 60,  target: 50, cols: 6, rows: 6, easyBias: 0.55, desc: '数字变杂，考验基础组合' },
+      { name: '一年级',     time: 55,  target: 60, cols: 6, rows: 7, easyBias: 0.45, desc: '时间收紧，需处理三位数组合' },
+      { name: '三年级',     time: 50,  target: 70, cols: 6, rows: 7, easyBias: 0.35, desc: '大数字增多，难度明显提升' },
+      { name: '六年级',     time: 45,  target: 80, cols: 6, rows: 8, easyBias: 0.25, desc: '满格战场，从外圈向中间消除' },
+      { name: '初中',       time: 40,  target: 90, cols: 6, rows: 8, easyBias: 0.18, desc: '限时紧迫，优先简单组合' },
+      { name: '高中',       time: 35,  target: 100, cols: 6, rows: 8, easyBias: 0.10, desc: '冲刺 100 分，解锁大学学位' },
+      { name: '最强大脑',   time: 30,  target: 120, cols: 6, rows: 8, easyBias: 0.05, desc: '终极挑战，数字极难凑齐' },
+    ];
+
+    let cols = 6, rows = 8;
+    let grid = [];
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let playing = false;
+    let currentLevel = 1;
+    let selectedIndices = new Set();
+    let unlockedLevel = 1;
+
+    let isDragging = false;
+    let dragStart = null;
+
+    const gridEl = document.getElementById('grid');
+    const selectionBox = document.getElementById('selection-box');
+    const scoreEl = document.getElementById('score');
+    const timerEl = document.getElementById('timer');
+    const sumEl = document.getElementById('current-sum');
+    const sumStat = document.querySelector('.stat.sum');
+    const hintEl = document.getElementById('hint');
+
+    function getLevelConfig() {
+      return LEVELS[currentLevel - 1];
+    }
+
+    function loadProgress() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      unlockedLevel = saved ? Math.min(parseInt(saved, 10) || 1, LEVELS.length) : 1;
+    }
+
+    function saveProgress() {
+      localStorage.setItem(STORAGE_KEY, String(unlockedLevel));
+    }
+
+    function randNum() {
+      const cfg = getLevelConfig();
+      const easyPool = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 7, 8, 9];
+      const hardPool = [6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9];
+      const pool = Math.random() < cfg.easyBias ? easyPool : hardPool;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function updateLevelUI() {
+      const cfg = getLevelConfig();
+      document.getElementById('level-banner').style.display = 'block';
+      document.getElementById('level-name').textContent = cfg.name;
+      document.getElementById('level-num').textContent = `第 ${currentLevel} / ${LEVELS.length} 关`;
+      document.getElementById('progress-label').textContent = `目标: ${score} / ${cfg.target} 分`;
+      document.getElementById('progress-fill').style.width = `${Math.min(100, (score / cfg.target) * 100)}%`;
+      hintEl.textContent = cfg.desc;
+    }
+
+    function renderLevelSelect() {
+      const gridEl2 = document.getElementById('level-grid');
+      gridEl2.innerHTML = '';
+      LEVELS.forEach((lv, i) => {
+        const num = i + 1;
+        const btn = document.createElement('button');
+        btn.className = 'level-btn';
+        if (num > unlockedLevel) btn.classList.add('locked');
+        if (num < unlockedLevel) btn.classList.add('cleared');
+        btn.innerHTML = `<span class="lv-num">${num}</span><span class="lv-star">${num < unlockedLevel ? '★' : num === unlockedLevel ? '▶' : '🔒'}</span>`;
+        btn.title = lv.name;
+        btn.addEventListener('click', () => {
+          if (num <= unlockedLevel) startLevel(num);
+        });
+        gridEl2.appendChild(btn);
+      });
+    }
+
+    function showLevelSelect() {
+      playing = false;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('level-banner').style.display = 'none';
+      document.getElementById('btn-start').style.display = 'inline-block';
+      document.getElementById('btn-restart').style.display = 'none';
+      document.getElementById('levelclear-overlay').classList.add('hidden');
+      document.getElementById('levelfail-overlay').classList.add('hidden');
+      document.getElementById('allclear-overlay').classList.add('hidden');
+      loadProgress();
+      renderLevelSelect();
+      document.getElementById('level-select-overlay').classList.remove('hidden');
+      initGrid();
+    }
+
+    function initGrid() {
+      const cfg = getLevelConfig();
+      cols = cfg.cols;
+      rows = cfg.rows;
+      gridEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      grid = [];
+      for (let i = 0; i < cols * rows; i++) {
+        grid.push({ value: randNum(), id: i });
+      }
+      renderGrid();
+    }
+
+    function renderGrid() {
+      gridEl.innerHTML = '';
+      grid.forEach((cell, idx) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile' + (cell.value === 0 ? ' empty' : '');
+        tile.dataset.idx = idx;
+        tile.textContent = cell.value || '';
+        if (selectedIndices.has(idx) && cell.value !== 0) tile.classList.add('selected');
+        gridEl.appendChild(tile);
+      });
+    }
+
+    function getSelectedSum() {
+      let sum = 0;
+      selectedIndices.forEach(idx => {
+        if (grid[idx]?.value > 0) sum += grid[idx].value;
+      });
+      return sum;
+    }
+
+    function updateSumDisplay() {
+      const sum = getSelectedSum();
+      sumEl.textContent = sum;
+      sumStat.classList.toggle('match', sum === TARGET);
+      if (sum === TARGET && selectedIndices.size > 0) {
+        hintEl.textContent = '✨ 完美！松开即可消除！';
+        hintEl.classList.add('success');
+      } else if (selectedIndices.size > 0) {
+        hintEl.textContent = `已选 ${selectedIndices.size} 个，还差 ${TARGET - sum} 到 10`;
+        hintEl.classList.remove('success');
+      } else {
+        hintEl.textContent = getLevelConfig().desc;
+        hintEl.classList.remove('success');
+      }
+    }
+
+    function getTileCenter(idx) {
+      const tile = gridEl.children[idx];
+      if (!tile) return null;
+      const gridRect = gridEl.getBoundingClientRect();
+      const tileRect = tile.getBoundingClientRect();
+      return {
+        x: tileRect.left + tileRect.width / 2 - gridRect.left,
+        y: tileRect.top + tileRect.height / 2 - gridRect.top
+      };
+    }
+
+    function getTilesInRect(x1, y1, x2, y2) {
+      const left = Math.min(x1, x2), right = Math.max(x1, x2);
+      const top = Math.min(y1, y2), bottom = Math.max(y1, y2);
+      const indices = new Set();
+      for (let i = 0; i < grid.length; i++) {
+        if (grid[i].value === 0) continue;
+        const center = getTileCenter(i);
+        if (center && center.x >= left && center.x <= right && center.y >= top && center.y <= bottom) {
+          indices.add(i);
+        }
+      }
+      return indices;
+    }
+
+    function updateSelectionBox(x1, y1, x2, y2) {
+      selectionBox.style.display = 'block';
+      selectionBox.style.left = Math.min(x1, x2) + 'px';
+      selectionBox.style.top = Math.min(y1, y2) + 'px';
+      selectionBox.style.width = Math.abs(x2 - x1) + 'px';
+      selectionBox.style.height = Math.abs(y2 - y1) + 'px';
+    }
+
+    function hideSelectionBox() { selectionBox.style.display = 'none'; }
+
+    function getRelativePos(e) {
+      const rect = gridEl.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function onDragStart(e) {
+      if (!playing) return;
+      e.preventDefault();
+      isDragging = true;
+      dragStart = getRelativePos(e);
+      selectedIndices = new Set();
+      updateSelectionBox(dragStart.x, dragStart.y, dragStart.x, dragStart.y);
+      renderGrid();
+      updateSumDisplay();
+    }
+
+    function onDragMove(e) {
+      if (!isDragging || !playing) return;
+      e.preventDefault();
+      const pos = getRelativePos(e);
+      updateSelectionBox(dragStart.x, dragStart.y, pos.x, pos.y);
+      selectedIndices = getTilesInRect(dragStart.x, dragStart.y, pos.x, pos.y);
+      renderGrid();
+      updateSumDisplay();
+    }
+
+    function onDragEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      hideSelectionBox();
+      const sum = getSelectedSum();
+      if (sum === TARGET && selectedIndices.size > 0 && playing) {
+        eliminateSelected();
+      } else if (selectedIndices.size > 0 && sum !== TARGET) {
+        hintEl.textContent = `总和是 ${sum}，不等于 10！`;
+        hintEl.classList.remove('success');
+      }
+      selectedIndices = new Set();
+      renderGrid();
+      updateSumDisplay();
+    }
+
+    async function eliminateSelected() {
+      const indices = [...selectedIndices].filter(i => grid[i].value > 0);
+      const count = indices.length;
+      if (count === 0) return;
+
+      indices.forEach(idx => gridEl.children[idx]?.classList.add('eliminating'));
+      await sleep(400);
+
+      score += count;
+      scoreEl.textContent = score;
+      updateLevelUI();
+
+      indices.forEach(idx => { grid[idx].value = 0; });
+
+      for (let col = 0; col < cols; col++) {
+        const colCells = [];
+        for (let row = 0; row < rows; row++) {
+          const idx = row * cols + col;
+          if (grid[idx].value > 0) colCells.push(grid[idx].value);
+        }
+        for (let row = rows - 1; row >= 0; row--) {
+          const idx = row * cols + col;
+          const fromBottom = rows - 1 - row;
+          grid[idx].value = fromBottom < colCells.length
+            ? colCells[colCells.length - 1 - fromBottom]
+            : randNum();
+        }
+      }
+
+      renderGrid();
+      gridEl.querySelectorAll('.tile').forEach(t => t.classList.add('spawning'));
+      await sleep(300);
+
+      const cfg = getLevelConfig();
+      if (score >= cfg.target) {
+        levelClear();
+      }
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function startLevel(level) {
+      currentLevel = level;
+      const cfg = getLevelConfig();
+      score = 0;
+      timeLeft = cfg.time;
+      playing = true;
+
+      scoreEl.textContent = '0';
+      timerEl.textContent = timeLeft;
+      timerEl.style.color = '';
+
+      document.getElementById('level-select-overlay').classList.add('hidden');
+      document.getElementById('levelclear-overlay').classList.add('hidden');
+      document.getElementById('levelfail-overlay').classList.add('hidden');
+      document.getElementById('allclear-overlay').classList.add('hidden');
+      document.getElementById('btn-start').style.display = 'none';
+      document.getElementById('btn-restart').style.display = 'inline-block';
+
+      updateLevelUI();
+      initGrid();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = timeLeft;
+        if (timeLeft <= 10) timerEl.style.color = '#d63031';
+        else timerEl.style.color = '';
+        if (timeLeft <= 0) levelFail();
+      }, 1000);
+    }
+
+    function levelClear() {
+      playing = false;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+
+      if (currentLevel >= unlockedLevel && currentLevel < LEVELS.length) {
+        unlockedLevel = currentLevel + 1;
+        saveProgress();
+      }
+
+      const cfg = getLevelConfig();
+      document.getElementById('clear-title').textContent = `第 ${currentLevel} 关通关！`;
+      document.getElementById('clear-score').textContent = score;
+      document.getElementById('clear-msg').textContent = `${cfg.name} · 目标 ${cfg.target} 分达成！`;
+
+      if (currentLevel >= LEVELS.length) {
+        document.getElementById('total-score').textContent = score;
+        document.getElementById('allclear-overlay').classList.remove('hidden');
+      } else {
+        document.getElementById('btn-next-level').textContent = `第 ${currentLevel + 1} 关 →`;
+        document.getElementById('levelclear-overlay').classList.remove('hidden');
+      }
+    }
+
+    function levelFail() {
+      playing = false;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+
+      const cfg = getLevelConfig();
+      const gap = cfg.target - score;
+      document.getElementById('fail-title').textContent = `第 ${currentLevel} 关失败`;
+      document.getElementById('fail-score').textContent = score;
+      document.getElementById('fail-msg').textContent = `目标 ${cfg.target} 分，还差 ${gap} 分，再试一次！`;
+      document.getElementById('levelfail-overlay').classList.remove('hidden');
+    }
+
+    gridEl.addEventListener('mousedown', onDragStart);
+    gridEl.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+    gridEl.addEventListener('touchstart', onDragStart, { passive: false });
+    gridEl.addEventListener('touchmove', onDragMove, { passive: false });
+    document.addEventListener('touchend', onDragEnd);
+
+    document.getElementById('btn-start').addEventListener('click', showLevelSelect);
+    document.getElementById('btn-restart').addEventListener('click', showLevelSelect);
+    document.getElementById('btn-from-lv1').addEventListener('click', () => startLevel(1));
+    document.getElementById('btn-next-level').addEventListener('click', () => startLevel(currentLevel + 1));
+    document.getElementById('btn-retry').addEventListener('click', () => startLevel(currentLevel));
+    document.getElementById('btn-back-select').addEventListener('click', showLevelSelect);
+    document.getElementById('btn-fail-back').addEventListener('click', showLevelSelect);
+    document.getElementById('btn-replay-all').addEventListener('click', () => { unlockedLevel = 1; saveProgress(); startLevel(1); });
+    document.getElementById('btn-all-back').addEventListener('click', showLevelSelect);
+
+    loadProgress();
+    currentLevel = 1;
+    initGrid();
+    renderLevelSelect();
+  </script>
+</body>
+</html>
